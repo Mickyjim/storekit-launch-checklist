@@ -1,50 +1,82 @@
 # StoreKit Launch Checklist
-A practical checklist for the gap between a purchase button and reliable access. A free resource from the owner of StoreKit Launch Kit, prepared with AI agents. No paid kit source is included.
+
+**Check what happens after someone taps Buy.**
+
+A free checklist for testing subscriptions, lifetime purchases and premium access in an iOS app. Use it when adding in-app purchases or investigating a purchase that did not unlock the expected feature.
+
+For independent developers, small teams and people building with AI assistance. You will need access to your app and its Xcode project to run the checks. This is guidance and test recipes, not an executable test suite or implementation library.
+
+## Start here
+
+1. Check your [product configuration](configuration.md).
+2. Run the scenarios below, including the [three detailed test recipes](representative-tests.md).
+3. Record what actually happened in the [release evidence worksheet](release-evidence.md). Keep untested items marked **NOT RUN**.
+
+If something fails, use the [diagnostics guide](diagnostics.md) before changing purchase code.
+
+| File | What it helps you do |
+| --- | --- |
+| [Configuration](configuration.md) | Tell local Xcode test data apart from your real App Store products. |
+| [Test recipes](representative-tests.md) | Check subscription expiry, a lifetime refund, and a pending purchase that is later approved. |
+| [Diagnostics](diagnostics.md) | Investigate missing products, locked features and access changes. |
+| [Release worksheet](release-evidence.md) | Keep local, signed-device and manual test evidence separate. |
+
+<details>
+<summary><strong>Open the full purchase and access checklist</strong></summary>
 
 ## Before purchase testing
-- [ ] Write down your product IDs, product types, subscription group and feature mapping. Decide whether you have one access tier or several.
-- [ ] Confirm IDs match your code exactly; distinguish local StoreKit configuration from App Store Connect. A successful local fixture does not establish store readiness.
-- [ ] Display StoreKit-provided localized prices. Do not infer an introductory offer is free or available to every customer.
+
+- [ ] Write down product IDs, types, subscription group and feature mapping. Decide whether your app has one access tier or several.
+- [ ] Match IDs exactly between your code and configuration. A successful local fixture does not establish App Store readiness.
+- [ ] Display StoreKit-provided localized prices. An introductory offer is not necessarily free or available to every customer.
 - [ ] Set real Terms and Privacy destinations and a visible restore/manage route.
 
 ## Access must be evidence-based
-- [ ] Grant access only from verified, recognized transaction evidence and relevant verified renewal information.
-- [ ] Handle cancellation, pending approval and verification failure distinctly. A purchase callback is not a permanent premium flag.
-- [ ] Refresh current entitlement evidence at startup/foreground and keep a transaction-update listener alive under one lifecycle owner.
-- [ ] Deliver recognized verified purchases before finishing them. Do not silently finish unknown products.
-- [ ] Check revocation, expiration and superseded transactions. Subscription auto-renew disabled does not mean access ends immediately.
-- [ ] If using billing grace, evaluate verified grace evidence and its end date. Billing retry alone is not an entitlement.
-- [ ] Do not convert a failed network refresh into a fabricated no-purchase state. Do not extend an expired grant indefinitely.
+
+- [ ] Grant access only from verified, recognized transactions and relevant verified renewal information.
+- [ ] Keep cancellation, pending approval and verification failure distinct. A purchase callback is not a permanent premium flag.
+- [ ] Refresh entitlement evidence at startup/foreground and keep one lifecycle owner for the transaction-update listener.
+- [ ] Deliver recognized, verified purchases before finishing them. Do not silently finish unknown products.
+- [ ] Check revocation, expiration and superseded transactions. Disabling auto-renew does not immediately end paid access.
+- [ ] Evaluate verified billing-grace evidence and its end date. Billing retry alone does not grant access.
+- [ ] Do not turn a failed network refresh into a fabricated no-purchase state, or extend an expired grant indefinitely.
 
 ## Run this minimum scenario matrix
+
 | Scenario | What to observe |
-|---|---|
-| Fresh install, no purchase | No accidental premium; loading/unknown distinct from complete empty result |
-| Monthly and annual purchase | Correct localized product; verified access after delivery |
-| Cancel purchase sheet | No new access; existing access preserved |
-| Pending purchase | No new grant until verified approval arrives through updates |
-| Relaunch and restore | Known purchases recover; listener not duplicated |
-| Renewal disabled | Access remains until actual verified expiration |
-| Expiration | Native expiration is observable before app denial is asserted |
-| Lifetime refund | Revocation removes access despite absence of subscription expiry |
-| Grace then grace expiry | Access during verified grace, denied after verified grace end |
-| Billing retry, no grace | Retry alone does not grant access |
-| Offline / failed refresh | Explicit uncertainty, bounded existing verified evidence |
+| --- | --- |
+| Fresh install, no purchase | No accidental premium; loading/unknown distinct from a complete empty result. |
+| Monthly and annual purchase | Correct localized product; verified access after delivery. |
+| Cancel purchase sheet | No new access; existing valid access preserved. |
+| Pending purchase | No new grant until verified approval arrives through updates. |
+| Relaunch and restore | Known purchases recover; listener not duplicated. |
+| Renewal disabled | Access remains until actual verified expiration. |
+| Expiration | Observe native expiration before asserting app denial. |
+| Lifetime refund | Revocation removes access even though a lifetime purchase has no expiry. |
+| Grace, then grace expiry | Access during verified grace; denied after verified grace ends. |
+| Billing retry without grace | Retry alone does not grant access. |
+| Offline / failed refresh | Explicit uncertainty, bounded existing verified evidence. |
 
 ## Repeat beyond local Xcode tests
+
 - [ ] Run your signed app in Sandbox/TestFlight with local StoreKit configuration disabled.
-- [ ] Confirm actual catalog availability, pricing, groups, offers and relevant account agreements.
-- [ ] Check Apple's purchase sheet, restoration, management and app-specific entitlement state.
-- [ ] Traverse paywall with VoiceOver, large text, light/dark and reduced-motion/transparency settings.
-- [ ] Record toolchain, device/runtime, environment, result and outstanding manual checks. No claim of universal production correctness follows from a simulator pass.
+- [ ] Confirm real catalog availability, pricing, groups, offers and relevant account agreements.
+- [ ] Check Apple's purchase sheet, restoration, management and your app's access state.
+- [ ] Traverse the paywall with VoiceOver, large text, light/dark and reduced-motion/transparency settings.
+- [ ] Record toolchain, device/runtime, environment, results and remaining manual checks. A simulator pass does not certify production correctness.
 
-See [diagnostics](diagnostics.md), [test recipes](representative-tests.md), [configuration](configuration.md) and the [release evidence worksheet](release-evidence.md). Copy the worksheet for your own build; its unrun rows stay NOT RUN until supported by observations.
+</details>
 
-## Need the implementation too?
-Disclosure: StoreKit Launch Kit is my separate paid source-code product, **€39 one-time**. It is for a client-only iOS app with one premium access tier using subscriptions, lifetime access, or both. The package includes three replaceable paywalls, an entitlement policy and diagnostics. The 1 October engineering run recorded 58 core and 14 native tests passing; these are historical results for unchanged implementation, not production certification.
+## Want the implementation too?
 
-This checklist remains useful without buying the kit. It contains no paid kit source. If you need a server-authoritative entitlement service, cross-platform accounts or a consumable ledger, this package does not provide them. Family Sharing is not validated. Your own App Store configuration, signing, signed-device Sandbox/TestFlight and human accessibility checks remain necessary.
+**StoreKit Launch Kit is a separate €39 one-time source-code product.** It brings together a StoreKit 2 purchase controller, premium-access rules, three adaptable SwiftUI paywalls, local diagnostics, tests and integration guides.
 
-[Screenshots, scope and commercial terms](https://storekit-launch-kit.favre-michael.chatgpt.site/?utm_source=github&utm_medium=organic&utm_campaign=sklk_founder_01&utm_content=checklist).
+It fits client-only iOS apps with **one premium access tier**, using auto-renewable subscriptions, a non-consumable lifetime purchase, or both. It does not provide a server, cross-platform accounts, consumable credits or non-renewing subscriptions. Family Sharing is not validated. You still configure your App Store products, signing and legal links, and test your own app on signed devices and in Sandbox/TestFlight, including human accessibility checks.
 
-Apple references: [StoreKit testing walkthrough](https://developer.apple.com/videos/play/wwdc2022/10039/), [StoreKit 2 overview](https://developer.apple.com/storekit/). Check current API documentation for your deployment target.
+The 1 October 2026 engineering run recorded 58 core and 14 native StoreKit tests passing for unchanged implementation. These are historical local results, not production certification or a guarantee for your integration.
+
+[Explore the kit, screenshots and commercial terms](https://storekit-launch-kit.favre-michael.chatgpt.site/?utm_source=github&utm_medium=organic&utm_campaign=sklk_founder_01&utm_content=checklist).
+
+This free checklist is useful without buying the kit and contains no paid implementation source. **Disclosure:** Michael Favre owns StoreKit Launch Kit. This resource was prepared with AI assistance.
+
+Apple references: [StoreKit testing walkthrough](https://developer.apple.com/videos/play/wwdc2022/10039/) · [StoreKit 2 overview](https://developer.apple.com/storekit/). Check current API documentation for your deployment target.
